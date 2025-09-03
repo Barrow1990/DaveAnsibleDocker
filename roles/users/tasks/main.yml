@@ -1,0 +1,51 @@
+---
+- name: Create user accounts
+  user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    shell: /bin/bash
+    state: present
+    create_home: yes
+  loop: "{{ users_list }}"
+
+- name: Ensure .ssh directory exists
+  file:
+    path: "/home/{{ item.name }}/.ssh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0700'
+  loop: "{{ users_list }}"
+
+- name: Fetch GitHub public keys for each user
+  uri:
+    url: "https://github.com/{{ item.github_user }}.keys"
+    return_content: yes
+  register: github_key_result
+  loop: "{{ users_list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  delegate_to: localhost
+  become: false
+
+- name: Set user GitHub keys as a fact
+  set_fact:
+    user_keys_map: "{{ user_keys_map | default({}) | combine({ item.item.name: item.content }) }}"
+  loop: "{{ github_key_result.results }}"
+
+- name: Install GitHub public keys
+  copy:
+    content: "{{ user_keys_map[item.name] }}"
+    dest: "/home/{{ item.name }}/.ssh/authorized_keys"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0600'
+  loop: "{{ users_list }}"
+
+- name: Add user to sudoers if needed
+  user:
+    name: "{{ item.name }}"
+    groups: sudo
+    append: yes
+  when: item.sudo
+  loop: "{{ users_list }}"

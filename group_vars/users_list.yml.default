@@ -1,0 +1,11 @@
+---
+users_list:
+  - name: username
+    # Run `openssl passwd -6` to generate a password hash
+    password: "hashedpassword"
+    github_user: github_user
+    sudo: false
+  - name: username
+    password: "hashedpassword"
+    github_user: github_user
+    sudo: true
