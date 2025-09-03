@@ -5,7 +5,7 @@
     password: "{{ item.password }}"
     shell: /bin/bash
     state: present
-    create_home: yes
+    create_home: true
   loop: "{{ users_list }}"
 
 - name: Ensure .ssh directory exists
@@ -20,7 +20,7 @@
 - name: Fetch GitHub public keys for each user
   uri:
     url: "https://github.com/{{ item.github_user }}.keys"
-    return_content: yes
+    return_content: true
   register: github_key_result
   loop: "{{ users_list }}"
   loop_control:
@@ -30,7 +30,14 @@
 
 - name: Set user GitHub keys as a fact
   set_fact:
-    user_keys_map: "{{ user_keys_map | default({}) | combine({ item.item.name: item.content }) }}"
+    user_keys_map: |
+      {{
+        user_keys_map
+        | default({})
+        | combine({
+            item.item.name: item.content
+          })
+      }}"
   loop: "{{ github_key_result.results }}"
 
 - name: Install GitHub public keys
@@ -46,6 +53,6 @@
   user:
     name: "{{ item.name }}"
     groups: sudo
-    append: yes
+    append: true
   when: item.sudo
   loop: "{{ users_list }}"
