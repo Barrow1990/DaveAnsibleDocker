@@ -1,11 +1,11 @@
 name: Molecule Test
 
-on:
-  push:
-    paths:
-      - '**.yml'
-      - '**.yaml'
-  pull_request:
+# on:
+#   push:
+#     paths:
+#       - '**.yml'
+#       - '**.yaml'
+#   pull_request:
 
 jobs:
   test:
