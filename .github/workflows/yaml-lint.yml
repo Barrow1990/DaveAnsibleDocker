@@ -1,4 +1,4 @@
-name: Ansible Lint
+name: Yaml Lint
 
 on:
   push:
@@ -20,9 +20,9 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Ansible and ansible-lint
+      - name: Install yamllint
         run: |
-          pip install yaml-lint
+          pip install yamllint
 
       - name: Validate YAML syntax
         run: |
